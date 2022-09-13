@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+    <script src="js/campo-minado.js"></script>
+  </head>
+  <body>
+    <div id="exibir-execucao"></div>
+
+    <script>
+      function minado() {
+        var campoMinado = new CampoMinado();                          // é responsável por iniciar um novo jogo do campo minado
+
+        this.gameIteration = function (housesCount) {                 // This ,referencia ao ojeto
+          Jogo = this.createTable();
+          closedHouse = this.positionClose(Jogo);
+          console.log(closedHouse);
+          const currentHouse = this.getNumberRandom(closedHouse);   
+          campoMinado.Abrir(currentHouse.line, currentHouse.column); // Método responsável por abrir uma posição
+
+          status = campoMinado.JogoStatus();                         // Método que retorna(int) o status do jogo atual
+          document.getElementById("exibir-execucao").innerHTML +=             
+            "<pre>" +
+            `Abrindo casa: linha(${currentHouse.line}) / coluna(${currentHouse.column})` +  //Linha e coluna q esta sendo aberto
+            "</pre>";
+
+          this.printTable(status);                                                         
+
+          housesOpenCount = this.totalHouseOpen(housesCount);
+          console.log(housesOpenCount);
+
+          return { status, currentHouse, housesOpenCount };
+        };
+
+        this.createTable = function () {
+          let tabuleiro = campoMinado.Tabuleiro().split("\r\n");
+          let game = [];
+          for (let lineIndex = 0; lineIndex < tabuleiro.length; lineIndex++) {
+            let line = tabuleiro[lineIndex].split("");
+            game.push(line);
+          }
+
+          return game;
+        };
+
+        this.positionClose = function (Jogo) {
+          var positionColumn = [];
+          var positionLine = [];
+          console.log(Jogo);
+          for (let lineIndex = 0; lineIndex < Jogo.length; lineIndex++) {
+            line = Jogo[lineIndex];
+            for (
+              let columnIndex = 0;
+              columnIndex < line.length;
+              columnIndex++
+            ) {
+              if (line[columnIndex] === "-") {
+                positionColumn.push(columnIndex + 1);
+                positionLine.push(lineIndex + 1);
+                console.log(line[columnIndex]);
+              }
+            }
+          }
+
+          return [positionLine, positionColumn];                                // retorna linha e coluna
+        };
+
+        this.getNumberRandom = function (closedPositions) {                    
+          const positionNumber = closedPositions[0].length;
+          const randomIndex = Math.floor(Math.random() * positionNumber);     // A função Math.random() retorna um número aleatório no intervalo [0,1]
+          
+          const line = closedPositions[0][randomIndex];
+          const column = closedPositions[1][randomIndex];
+
+          return { line, column };
+        };
+
+        this.printTable = function (status) {
+          document.getElementById("exibir-execucao").innerHTML +=
+            "<pre>" + campoMinado.Tabuleiro() + "</pre>";
+          if (status == 0) {                                                        // Condicional 0 Jogo em aberto, Continue procurando as posições que não possuem minas terrestres;
+            document.getElementById("exibir-execucao").innerHTML +=
+              "<pre>" +
+              " ---------- Status: Jogo em Aberto ---------" +
+              "</pre>";
+          }
+          if (status == 1) {                                                      // Condicional 1 Vitoria,Você encontrou todas as posições que não possuem minas terrestres;
+            document.getElementById("exibir-execucao").innerHTML +=
+              "<pre>" + " ---------- Status: Vitória ---------" + "</pre>";
+          }
+          if (status == 2) {
+            document.getElementById("exibir-execucao").innerHTML +=              // Condicional 2 Game Over, Você encontrou uma mina terreste
+              "<pre>" + " ---------- Status: Game Over ---------" + "</pre>";
+          }
+        };
+
+        this.tableLength = function (table) {
+          let lines = table.length;
+          let columns = 0;
+          if (lines > 0) {
+            columns = table[0].length;
+          }
+          return { lines, columns };
+        };
+        this.totalHouseOpen = function (tableLength) {                          
+          Jogo = this.createTable();
+          closedHouse = this.positionClose(Jogo);
+          let closedHouseount = closedHouse[0].length;
+          return tableLength - closedHouseount;
+        };
+      }
+      document.getElementById("exibir-execucao").innerHTML +=
+        "----------- Status: Início do jogo -----------";
+      var campoMinado = new minado();
+
+      function FindBomb() {                                     //Essa Função executa o jogo é para quando encontra a primeira bomba e então receber o status de game over
+        Jogo = campoMinado.createTable();
+        let status = 0;
+        const tabelaEstilo= campoMinado.tableLength(Jogo);
+        const numberHouses = tabelaEstilo.lines * tabelaEstilo.columns;
+        while (status == 0) {
+          gameResult = campoMinado.gameIteration(numberHouses);
+          if (gameResult.status == 2) {
+            document.getElementById("exibir-execucao").innerHTML +=
+              "<pre>" +
+              `Game Over: Mina encontrada na posição Linha: ${gameResult.currentHouse.line} || Coluna ${gameResult.currentHouse.column}` + //Definições de onde foi encontrada a bomba
+              "</pre>";
+          }
+
+          status = gameResult.status;
+        }
+      }
+      FindBomb();                                               // Chamada da função
+
+    </script>
+  </body>
+</html>
+
